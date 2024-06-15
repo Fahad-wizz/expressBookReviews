@@ -28,6 +28,11 @@ const authenticatedUser = (username,password)=>{ //returns boolean
     return valid;
 }
 
+function validateISBN(isbn) {
+  return books.hasOwnProperty(isbn);
+}
+
+
 //only registered users can login
 regd_users.post("/login", (req,res) => {
   //Write your code here
@@ -47,34 +52,52 @@ regd_users.post("/login", (req,res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
   let isbn = req.params.isbn;
-  let review = req.body.review;
-  let username = req.session.username; // Extract username from session
+  let review = req.query.review; // Using query parameter for review text
+  let username = req.session.username;
 
   if (!isbn || !review) {
     return res.status(400).json({ success: 0, message: "ISBN and review are required" });
   }
 
-  let book = books[isbn];
-  if (book) {
-    book.reviews[username] = review;
-    return res.status(200).json({ success: 1, message: "Review added/updated successfully" });
+  if (!books[isbn]) {
+    return res.status(404).json({ success: 0, message: "Book not found" });
   }
-  return res.status(404).json({ success: 0, message: "Book not found" });
+
+  // Check if the user has already reviewed this ISBN
+  if (books[isbn].reviews && books[isbn].reviews[username]) {
+    // Update existing review
+    books[isbn].reviews[username] = review;
+    return res.status(200).json({ success: 1, message: "Review updated successfully" });
+  } else {
+    // Add new review
+    if (!books[isbn].reviews) {
+      books[isbn].reviews = {};
+    }
+    books[isbn].reviews[username] = review;
+    return res.status(200).json({ success: 1, message: "Review added successfully" });
+  }
 });
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {
   let isbn = req.params.isbn;
-  let username = req.session.username; // Assuming username is stored in session
-  let book = books[isbn];
+  let username = req.session.username;
 
-  if (book && book.reviews && book.reviews[username]) {
-    delete book.reviews[username]; // Delete the review for the current user
-    return res.status(200).json({message: "Review deleted successfully"});
+  if (!isbn) {
+    return res.status(400).json({ success: 0, message: "ISBN parameter is required" });
+  }
+
+  if (!books[isbn]) {
+    return res.status(404).json({ success: 0, message: "Book not found" });
+  }
+
+  // Check if the user has a review for this ISBN
+  if (books[isbn].reviews && books[isbn].reviews[username]) {
+    delete books[isbn].reviews[username];
+    return res.status(200).json({ success: 1, message: "Review deleted successfully" });
   } else {
-    return res.status(404).json({message: "Review not found or you do not have permission to delete this review"});
+    return res.status(404).json({ success: 0, message: "Review not found or you do not have permission to delete this review" });
   }
 });
-
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;

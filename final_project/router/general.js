@@ -13,7 +13,9 @@ public_users.post("/register", (req,res) => {
       return res.status(400).json({message: "User already exists"});
   }
   users.push({username:username,password:password});
-  return res.status(200).json({message: "User registered successfully"});
+  return res.status(200).json({message: "User registered successfully" , users: users});
+  
+
 } 
 );
 

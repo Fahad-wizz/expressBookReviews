@@ -29,32 +29,47 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 }
 
 //only registered users can login
-regd_users.post("/login", (req,res) => {
+regd_users.post("/customer/login", (req,res) => {
   //Write your code here
   let username = req.body.username;
   let password = req.body.password;
-  if(authenticatedUser(username,password)){
-      let token = jwt.sign({username:username},'secretkey');
-      return res.status(200).json({message: "Login Successful", token: token});
+  if (authenticatedUser(username, password)) { // Assuming this function checks user credentials
+    let token = jwt.sign({ username: username }, 'secretkey', { expiresIn: '1h' }); // Sign the token with a 1-hour expiration
+    // Optionally, you can store additional user information in the token payload
+    return res.status(200).json({ message: "Login Successful", token: token });
+  } else {
+    return res.status(401).json({ message: "Login Failed" });
   }
-  return res.status(401).json({message: "Login Failed"});
-}
-);
+});
 
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
   let isbn = req.params.isbn;
-  let book = books.find((book)=>book.isbn === isbn);
+  let review = req.body.review;
+  let username = req.body.username;
+  let book = books[isbn];
   if(book){
-      let review = req.body.review;
-      book.reviews.push(review);
-      return res.status(200).json({message: "Review Added"});
+      book.reviews[username] = review;
+      return res.status(200).json({message: "Review added successfully"});
   }
   return res.status(404).json({message: "Book not found"});
-}
-);
+});
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  let isbn = req.params.isbn;
+  let username = req.session.username; // Assuming username is stored in session
+  let book = books[isbn];
+
+  if (book && book.reviews && book.reviews[username]) {
+    delete book.reviews[username]; // Delete the review for the current user
+    return res.status(200).json({message: "Review deleted successfully"});
+  } else {
+    return res.status(404).json({message: "Review not found or you do not have permission to delete this review"});
+  }
+});
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;

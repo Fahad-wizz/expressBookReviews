@@ -29,7 +29,7 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 }
 
 //only registered users can login
-regd_users.post("/customer/login", (req,res) => {
+regd_users.post("/login", (req,res) => {
   //Write your code here
   let username = req.body.username;
   let password = req.body.password;

@@ -25,6 +25,7 @@ app.use("/customer/auth/*", function auth(req,res,next){
                 });
             }else{
                 req.decoded = decoded;
+                req.session.username = decoded.username; // Store the usern   in the session
                 next();
             }
         });

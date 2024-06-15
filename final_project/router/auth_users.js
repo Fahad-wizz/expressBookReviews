@@ -48,13 +48,18 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
   let isbn = req.params.isbn;
   let review = req.body.review;
-  let username = req.body.username;
-  let book = books[isbn];
-  if(book){
-      book.reviews[username] = review;
-      return res.status(200).json({message: "Review added successfully"});
+  let username = req.session.username; // Extract username from session
+
+  if (!isbn || !review) {
+    return res.status(400).json({ success: 0, message: "ISBN and review are required" });
   }
-  return res.status(404).json({message: "Book not found"});
+
+  let book = books[isbn];
+  if (book) {
+    book.reviews[username] = review;
+    return res.status(200).json({ success: 1, message: "Review added/updated successfully" });
+  }
+  return res.status(404).json({ success: 0, message: "Book not found" });
 });
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {

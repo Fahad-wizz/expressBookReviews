@@ -18,20 +18,21 @@ public_users.post("/register", (req,res) => {
 );
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  //Write your code here
-  let bookList = books.map((book)=>{return {isbn:book.isbn,title:book.title}});
-  return res.status(200).json(bookList);
+public_users.get('/', function (req, res) {
+  let bookList = Object.values(books).map(book => {
+    return {author: book.author, title: book.title};
+  });
+  return res.status(200).send(JSON.stringify(bookList, null, 2)); // Pretty print with 2 spaces
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   //Write your code here
   let isbn = req.params.isbn;
-  let book = books.find((book)=>book.isbn === isbn);
+  let book = Object.values(books).find((book)=>book.isbn === isbn);
   if(book){
-      return res.status(200).json(book);
-  } 
+      return res.status(200).send(JSON.stringify(book, null, 2)); // Pretty print with 2 spaces
+  }
   return res.status(404).json({message: "Book not found"});
 
  });
@@ -40,7 +41,7 @@ public_users.get('/isbn/:isbn',function (req, res) {
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
   let author = req.params.author;
-  let book = books.find((book)=>book.author === author);
+  let book = Object.values(books).find((book)=>book.author === author);
   if(book){
       return res.status(200).json(book);
   }
@@ -51,7 +52,7 @@ public_users.get('/author/:author',function (req, res) {
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
   let title = req.params.title;
-  let book = books.find((book)=>book.title === title);
+  let book = Object.values(books).find((book)=>book.title === title);
   if(book){
       return res.status(200).json(book);
   }
@@ -63,7 +64,7 @@ public_users.get('/title/:title',function (req, res) {
 public_users.get('/review/:isbn',function (req, res) {
   //Write your code here
   let isbn = req.params.isbn;
-  let book = books.find((book)=>book.isbn === isbn);
+  let book = Object.values(books).find((book)=>book.isbn === isbn);
   if(book){
       return res.status(200).json(book.reviews);
   }
